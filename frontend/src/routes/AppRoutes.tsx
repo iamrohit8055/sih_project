@@ -11,6 +11,7 @@ import Market from "@/pages/Market";
 import Produce from "@/pages/Produce";
 import NotFound from "@/pages/NotFound";
 import AppLayout from "@/layouts/AppLayout";
+import CropDetails from "@/pages/CropDetails";
 
 function AppRoutes() {
   return (
@@ -22,6 +23,7 @@ function AppRoutes() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="crops" element={<Crops />} />
+          <Route path="crops/:cropId" element={<CropDetails />} />
           <Route path="disease-detection" element={<DiseaseDetection />} />
           <Route path="produce" element={<Produce />} />
           <Route path="decision-engine" element={<DecisionEngine />} />
