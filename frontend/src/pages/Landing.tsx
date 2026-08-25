@@ -5,6 +5,7 @@ import {
   Leaf,
   LineChart,
   Menu,
+  X,
   ScanLine,
   Sparkles,
   Sprout,
@@ -119,6 +120,8 @@ function AnimatedStat({
 }
 
 function Landing() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#f7faf7] pt-[80px] text-[#101a32]">
       <div className="border-b border-emerald-950 bg-[#003d32] px-3 py-1.5 text-center text-[11px] font-medium tracking-wide text-emerald-100 sm:text-xs">
@@ -177,13 +180,70 @@ function Landing() {
             </Link>
           </nav>
 
-          <Link
-            to="/login"
-            className="rounded-lg p-2 text-emerald-800 md:hidden"
-            aria-label="Open login"
-          >
-            <Menu size={24} />
-          </Link>
+          <div className="relative flex items-center gap-2 md:hidden">
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800 transition hover:bg-emerald-200"
+            >
+              <Bell size={16} />
+            </button>
+            <button
+              type="button"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800 transition hover:bg-emerald-200"
+            >
+              {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+
+            {isMobileMenuOpen && (
+              <div
+                id="mobile-navigation"
+                className="absolute right-0 top-12 w-56 rounded-xl border border-emerald-100 bg-white p-3 shadow-xl shadow-slate-900/10"
+              >
+                <div className="mb-2 flex items-center gap-2 border-b border-slate-100 px-3 pb-3 text-sm font-semibold text-emerald-800">
+                  <Globe2 size={16} />
+                  <button className="rounded-md bg-emerald-700 px-2 py-1 text-white">
+                    EN
+                  </button>
+                  <button className="px-2 py-1 hover:text-emerald-600">
+                    हिंदी
+                  </button>
+                </div>
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-bold text-[#003d32] hover:bg-emerald-50"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-bold text-[#003d32] hover:bg-emerald-50"
+                >
+                  Sign up
+                </Link>
+                <a
+                  href="#features"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-emerald-50"
+                >
+                  Explore Features
+                </a>
+                <a
+                  href="#innovation"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-emerald-50"
+                >
+                  Core Innovation
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -274,7 +334,7 @@ function Landing() {
         </div>
       </section>
 
-      <section className="bg-[#101a32] px-5 py-12 text-white md:px-8">
+      <section id="innovation" className="bg-slate-950 px-5 py-12 text-white md:px-8">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-5 md:flex-row md:items-center">
           <div>
             <h2 className="text-2xl font-extrabold text-emerald-400 sm:text-3xl">
@@ -325,7 +385,7 @@ function Landing() {
         </div>
       </section>
 
-      <footer className="bg-[#050b1d] px-5 py-8 text-sm text-slate-300 md:px-8">
+      <footer className="bg-slate-950 px-5 py-8 text-sm text-slate-300 md:px-8">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 md:flex-row">
           <p>
             <span className="font-bold text-emerald-400">✦ KrishiSetu AI</span>{" "}
