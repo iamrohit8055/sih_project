@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import DecisionEngine from "@/pages/DecisionEngine";
 import DiseaseDetection from "@/pages/DiseaseDetection";
 import Login from "@/pages/Login";
+import Landing from "@/pages/Landing";
 import Market from "@/pages/Market";
 import Produce from "@/pages/Produce";
 import NotFound from "@/pages/NotFound";
@@ -30,7 +31,7 @@ function AppRoutes() {
           <Route path="assistant" element={<Assistant />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/app" replace />} />
+        <Route path="/" element={<Landing />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
