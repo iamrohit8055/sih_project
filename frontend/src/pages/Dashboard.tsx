@@ -1,13 +1,28 @@
+import { useEffect, useState } from "react";
 import {
+  ArrowRight,
   ArrowUpRight,
+  CloudRain,
+  Droplets,
   IndianRupee,
   Leaf,
+  MapPin,
   Package,
+  RefreshCw,
+  Sparkles,
   Sprout,
   Wheat,
+  Wind,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import PageHeader from "@/components/common/PageHeader";
+import {
+  type CompleteWeatherReport,
+  type LocationOption,
+  fetchFarmWeatherData,
+  getSavedFarmerLocation,
+} from "@/services/weatherService";
 
 const stats = [
   {
@@ -38,12 +53,141 @@ const stats = [
 ];
 
 function Dashboard() {
+  const [weatherReport, setWeatherReport] = useState<CompleteWeatherReport | null>(null);
+  const [loadingWeather, setLoadingWeather] = useState<boolean>(true);
+  const [farmerLocation] = useState<LocationOption>(() => getSavedFarmerLocation());
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadQuickWeather() {
+      setLoadingWeather(true);
+      try {
+        const data = await fetchFarmWeatherData(farmerLocation);
+        if (isMounted) {
+          setWeatherReport(data);
+        }
+      } catch (err) {
+        console.error("Dashboard weather fetch error:", err);
+      } finally {
+        if (isMounted) {
+          setLoadingWeather(false);
+        }
+      }
+    }
+    loadQuickWeather();
+    return () => {
+      isMounted = false;
+    };
+  }, [farmerLocation]);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Welcome back, Farmer!"
-        description="Here's an overview of your farms and current agricultural activity."
+        description="Here's an overview of your farms, live weather conditions, and current agricultural activity."
       />
+
+      {/* Live Farm Weather Banner */}
+      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-r from-emerald-900 via-slate-900 to-slate-950 p-6 text-white shadow-md">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          {/* Left: Location & Current Conditions */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/30">
+                <Sparkles size={13} />
+                Live Farm Weather Forecast
+              </span>
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <MapPin size={13} className="text-emerald-400" />
+                <span>{farmerLocation.farmName || farmerLocation.name}</span>
+              </div>
+            </div>
+
+            {loadingWeather ? (
+              <div className="flex items-center gap-3 py-3">
+                <RefreshCw size={20} className="animate-spin text-emerald-400" />
+                <span className="text-sm text-slate-300">Fetching live weather data...</span>
+              </div>
+            ) : weatherReport ? (
+              <div>
+                <div className="flex flex-wrap items-baseline gap-4">
+                  <span className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+                    {weatherReport.current.temperature}°C
+                  </span>
+                  <div>
+                    <p className="text-base font-semibold text-emerald-400">
+                      {weatherReport.current.condition}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Feels like {weatherReport.current.apparentTemperature}°C • Rain Chance:{" "}
+                      {weatherReport.daily[0]?.precipitationProbability ?? 0}%
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick metrics */}
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-300">
+                  <div className="flex items-center gap-1.5">
+                    <Droplets size={14} className="text-blue-400" />
+                    <span>Humidity: {weatherReport.current.humidity}%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Wind size={14} className="text-teal-400" />
+                    <span>Wind: {weatherReport.current.windSpeed} km/h</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CloudRain size={14} className="text-sky-400" />
+                    <span>Today Rain: {weatherReport.daily[0]?.precipitationSum ?? 0} mm</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-300">
+                Weather information currently unavailable.
+              </p>
+            )}
+          </div>
+
+          {/* Right: Quick Agri Advisory & CTA */}
+          <div className="flex flex-col items-start gap-3 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:flex-row sm:items-center lg:max-w-md">
+            <div className="flex-1 text-xs">
+              {weatherReport ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        weatherReport.advisories.spraying.status === "favorable"
+                          ? "bg-emerald-500/20 text-emerald-300"
+                          : "bg-amber-500/20 text-amber-300"
+                      }`}
+                    >
+                      {weatherReport.advisories.spraying.status.toUpperCase()} SPRAY WINDOW
+                    </span>
+                  </div>
+                  <p className="mt-1 font-semibold text-slate-200">
+                    {weatherReport.advisories.spraying.title}
+                  </p>
+                  <p className="line-clamp-2 text-slate-400">
+                    {weatherReport.advisories.irrigation.advice}
+                  </p>
+                </>
+              ) : (
+                <p className="text-slate-400">
+                  Check hyper-local 7-day forecast and smart spraying/irrigation advisories.
+                </p>
+              )}
+            </div>
+
+            <Link
+              to="/app/weather"
+              className="flex shrink-0 items-center gap-1.5 rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-semibold text-slate-950 transition hover:bg-emerald-400"
+            >
+              <span>Full Forecast</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </div>
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -146,4 +290,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default Dashboard;

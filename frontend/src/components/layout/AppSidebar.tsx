@@ -3,12 +3,11 @@ import {
   Bot,
   Boxes,
   ChartNoAxesCombined,
-  CircleHelp,
+  CloudSun,
   Leaf,
   LayoutDashboard,
   Package,
   ScanLine,
-  Settings,
   Sprout,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -18,6 +17,12 @@ const navigation = [
     label: "Dashboard",
     path: "/app/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    label: "Weather Forecast",
+    path: "/app/weather",
+    icon: CloudSun,
+    badge: "LIVE",
   },
   {
     label: "My Crops",
