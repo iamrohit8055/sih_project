@@ -3,12 +3,10 @@ import {
   Bot,
   Boxes,
   ChartNoAxesCombined,
-  CircleHelp,
   Leaf,
   LayoutDashboard,
   Package,
   ScanLine,
-  Settings,
   Sprout,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
