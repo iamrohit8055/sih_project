@@ -1,13 +1,27 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.weather import router as weather_router
 
 app = FastAPI(
-    title="Smart Agriculture API",
-    description="Backend API for the SIH Smart Agriculture platform",
+    title="sih_project API",
+    description="AI-powered agriculture decision platform with live weather forecasting",
     version="1.0.0",
 )
 
+# CORS setup for local frontend development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "*",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(weather_router)
 
 # ==================================================
 # CORS
@@ -15,13 +29,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(weather_router)
+
 
 
 # ==================================================
@@ -31,7 +46,8 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {
-        "message": "Smart Agriculture API is running"
+        "message": "sih_project API is running",
+        "weather_api": "/api/weather/forecast",
     }
 
 

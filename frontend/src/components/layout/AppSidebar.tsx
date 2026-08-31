@@ -3,6 +3,7 @@ import {
   Bot,
   Boxes,
   ChartNoAxesCombined,
+  CloudSun,
   Leaf,
   LayoutDashboard,
   Map,
@@ -19,6 +20,12 @@ const navigation = [
     label: "Dashboard",
     path: "/app/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    label: "Weather Forecast",
+    path: "/app/weather",
+    icon: CloudSun,
+    badge: "LIVE",
   },
   {
     label: "My Crops",

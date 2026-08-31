@@ -8,6 +8,7 @@ import DiseaseDetection from "@/pages/DiseaseDetection";
 import Login from "@/pages/Login";
 import Market from "@/pages/Market";
 import Produce from "@/pages/Produce";
+import Weather from "@/pages/Weather";
 import NotFound from "@/pages/NotFound";
 import AppLayout from "@/layouts/AppLayout";
 import CropDetails from "@/pages/CropDetails";
@@ -22,6 +23,7 @@ function AppRoutes() {
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="weather" element={<Weather />} />
           <Route path="crops" element={<Crops />} />
           <Route path="crops/:cropId" element={<CropDetails />} />
           <Route path="disease-detection" element={<DiseaseDetection />} />
