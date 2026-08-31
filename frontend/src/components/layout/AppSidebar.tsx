@@ -5,6 +5,7 @@ import {
   ChartNoAxesCombined,
   Leaf,
   LayoutDashboard,
+  Map,
   Package,
   PanelLeftClose,
   PanelLeftOpen,
@@ -36,9 +37,9 @@ const navigation = [
     icon: Package,
   },
   {
-    label: "Decision Engine",
-    path: "/app/decision-engine",
-    icon: ChartNoAxesCombined,
+    label: "Map & Logistics",
+    path: "/app/logistics",
+    icon: Map,
   },
   {
     label: "Market Intelligence",
@@ -69,19 +70,19 @@ function AppSidebar({
   return (
     <aside
       className={`
-        relative z-40 hidden shrink-0
-        border-r border-slate-800
-        bg-slate-950 text-white
-        transition-[width] duration-300 ease-in-out
-        md:flex md:flex-col
-        ${collapsed ? "w-[72px]" : "w-64"}
-      `}
+    fixed left-0 top-0 z-40 z-40 flex h-screen shrink-0
+    border-r border-slate-800
+    bg-slate-950 text-white
+    transition-[width] duration-300 ease-in-out
+    flex-col
+    ${collapsed ? "w-18" : "w-64"}
+  `}
     >
       {/* ================================================== */}
       {/* BRAND / SIDEBAR TOGGLE                            */}
       {/* ================================================== */}
 
-      <div className="relative h-[73px] shrink-0 border-b border-slate-800 px-4">
+      <div className="relative h-18.25 shrink-0 border-b border-slate-800 px-4">
         {/* ================= EXPANDED ================= */}
 
         <div
@@ -95,14 +96,14 @@ function AppSidebar({
           `}
         >
           {/* Logo */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600">
             <Leaf size={22} strokeWidth={2} />
           </div>
 
           {/* Brand */}
           <div className="ml-3 min-w-0">
-            <h1 className="whitespace-nowrap text-lg font-bold">
-              SIH Project
+            <h1 className="whitespace-nowrap text-3xl font-bold">
+              Sasyam
             </h1>
 
             <p className="whitespace-nowrap text-xs text-emerald-400">
@@ -141,7 +142,7 @@ function AppSidebar({
             <div
               className="
                 pointer-events-none absolute
-                right-full top-1/2 z-[100]
+                right-full top-1/2 z-100
                 mr-3 -translate-y-1/2
                 whitespace-nowrap
                 rounded-lg bg-white
@@ -221,7 +222,7 @@ function AppSidebar({
             <div
               className="
         pointer-events-none absolute
-        left-full top-1/2 z-[100]
+        left-full top-1/2 z-100
         ml-3 -translate-y-1/2
         whitespace-nowrap
         rounded-lg bg-white
@@ -299,7 +300,7 @@ function AppSidebar({
         transition-transform duration-200
         group-hover:scale-105
         ${item.label === "Produce Management"
-                        ? "-translate-y-[1px]"
+                        ? "-translate-y-px"
                         : ""
                       }
       `}
@@ -314,7 +315,7 @@ function AppSidebar({
       duration-300 ease-in-out
       ${collapsed
                       ? "ml-0 max-w-0 opacity-0"
-                      : "ml-3 max-w-[180px] opacity-100"
+                      : "ml-3 max-w-45 opacity-100"
                     }
     `}
                 >
@@ -387,7 +388,7 @@ function AppSidebar({
               duration-300 ease-in-out
               ${collapsed
                 ? "max-w-0 opacity-0"
-                : "max-w-[160px] opacity-100"
+                : "max-w-40 opacity-100"
               }
             `}
           >

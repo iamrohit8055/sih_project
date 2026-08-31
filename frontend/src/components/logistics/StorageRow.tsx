@@ -43,7 +43,7 @@ function StorageRow({
         "last:border-b-0",
         selected
           ? "bg-sky-100 shadow-[inset_3px_0_0_#0284c7]"
-          : "hover:bg-slate-50 hover:shadow-[inset_3px_0_0_#38bdf8]",
+          : "hover:bg-slate-50 hover:shadow-[inset_3px_0_0_#0ea5e9]",
       ].join(" ")}
     >
       <div className="grid grid-cols-[40px_minmax(180px,1.5fr)_110px_130px_90px] items-center gap-4 px-5 py-4">

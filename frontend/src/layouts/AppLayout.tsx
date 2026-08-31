@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-
 import AppSidebar from "@/components/layout/AppSidebar";
 import TopNavbar from "@/components/layout/TopNavbar";
 
@@ -20,9 +19,7 @@ function AppLayout() {
   };
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(
-      "(min-width: 1024px)",
-    );
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
 
     const handleChange = (event: MediaQueryListEvent) => {
       setSidebarCollapsed(!event.matches);
@@ -36,7 +33,7 @@ function AppLayout() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Sidebar */}
       <AppSidebar
         collapsed={sidebarCollapsed}
@@ -44,10 +41,18 @@ function AppLayout() {
       />
 
       {/* Main application */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div
+        className={`
+          min-h-screen
+          transition-[margin-left]
+          duration-300
+          ease-in-out
+          ${sidebarCollapsed ? "ml-18" : "ml-64"}
+        `}
+      >
         <TopNavbar />
 
-        <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+        <main className="p-4 md:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

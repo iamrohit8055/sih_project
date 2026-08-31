@@ -51,7 +51,7 @@ const createMarkerIcon = (
     TRANSPORTER: {
       background: "#ecfdf5",
       border: "#86efac",
-      selectedBackground: "#059669",
+      selectedBackground: "#046909",
       selectedBorder: "#064e3b",
     },
 

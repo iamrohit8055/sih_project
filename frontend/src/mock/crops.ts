@@ -1,4 +1,10 @@
-import type { CropStatus } from "@/types/crop";
+import type { CropStatus } from "@/types/crops";
+
+import wheatImage from "@/assets/crops/wheat.jpg";
+import tomatoImage from "@/assets/crops/tomato.jpg";
+import potatoImage from "@/assets/crops/potato.jpg";
+import riceImage from "@/assets/crops/rice.jpg";
+
 
 export interface MockCrop {
   id: number;
@@ -10,7 +16,7 @@ export interface MockCrop {
   harvestDate: string;
   health: CropStatus;
   progress: number;
-  icon: string;
+  image: string;
   stage: string;
   soil: string;
   irrigation: string;
@@ -27,11 +33,12 @@ export const mockCrops: MockCrop[] = [
     harvestDate: "2026-03-20",
     health: "Healthy",
     progress: 72,
-    icon: "🌾",
+    image: wheatImage,
     stage: "Grain Filling",
     soil: "Loamy",
     irrigation: "Drip Irrigation",
   },
+
   {
     id: 2,
     name: "Tomato",
@@ -42,11 +49,12 @@ export const mockCrops: MockCrop[] = [
     harvestDate: "2026-04-15",
     health: "Needs Attention",
     progress: 54,
-    icon: "🍅",
+    image: tomatoImage,
     stage: "Flowering",
     soil: "Sandy Loam",
     irrigation: "Sprinkler",
   },
+
   {
     id: 3,
     name: "Potato",
@@ -57,11 +65,12 @@ export const mockCrops: MockCrop[] = [
     harvestDate: "2026-04-05",
     health: "Healthy",
     progress: 61,
-    icon: "🥔",
+    image: potatoImage,
     stage: "Tuber Development",
     soil: "Loamy",
     irrigation: "Drip Irrigation",
   },
+
   {
     id: 4,
     name: "Basmati Rice",
@@ -72,7 +81,7 @@ export const mockCrops: MockCrop[] = [
     harvestDate: "2025-10-28",
     health: "Critical",
     progress: 36,
-    icon: "🌱",
+    image: riceImage,
     stage: "Vegetative",
     soil: "Clay Loam",
     irrigation: "Flood Irrigation",

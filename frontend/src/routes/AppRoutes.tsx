@@ -4,7 +4,6 @@ import Analytics from "@/pages/Analytics";
 import Assistant from "@/pages/Assistant";
 import Crops from "@/pages/Crops";
 import Dashboard from "@/pages/Dashboard";
-import DecisionEngine from "@/pages/DecisionEngine";
 import DiseaseDetection from "@/pages/DiseaseDetection";
 import Login from "@/pages/Login";
 import Market from "@/pages/Market";
@@ -12,6 +11,7 @@ import Produce from "@/pages/Produce";
 import NotFound from "@/pages/NotFound";
 import AppLayout from "@/layouts/AppLayout";
 import CropDetails from "@/pages/CropDetails";
+import Logistics from "@/pages/Logistics";
 
 function AppRoutes() {
   return (
@@ -26,7 +26,7 @@ function AppRoutes() {
           <Route path="crops/:cropId" element={<CropDetails />} />
           <Route path="disease-detection" element={<DiseaseDetection />} />
           <Route path="produce" element={<Produce />} />
-          <Route path="decision-engine" element={<DecisionEngine />} />
+          <Route path="logistics" element={<Logistics />} />
           <Route path="market" element={<Market />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="assistant" element={<Assistant />} />
