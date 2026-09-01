@@ -6,6 +6,7 @@ import Crops from "@/pages/Crops";
 import Dashboard from "@/pages/Dashboard";
 import DiseaseDetection from "@/pages/DiseaseDetection";
 import Login from "@/pages/Login";
+import LandingPage from "@/pages/LandingPage";
 import Market from "@/pages/Market";
 import Produce from "@/pages/Produce";
 import Weather from "@/pages/Weather";
@@ -34,7 +35,7 @@ function AppRoutes() {
           <Route path="assistant" element={<Assistant />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/app" replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
