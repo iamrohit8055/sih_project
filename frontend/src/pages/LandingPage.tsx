@@ -1,24 +1,27 @@
 import {
   Activity,
+  ArrowDown,
   ArrowRight,
+  ArrowUp,
   Bell,
   CloudSun,
   Leaf,
   LineChart,
   Menu,
-  X,
+  MessageCircle,
+  Plus,
   ScanLine,
+  ShieldCheck,
   Sparkles,
   Sprout,
   Truck,
   Warehouse,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
-// The single source of truth for the "journey" section below.
-// Each entry = one step a user takes on Sasyam AI, grouped by who uses it
-// (farmer -> transporter -> warehouse owner), rendered in order as a timeline.
+// Jouney step ingredients:
 type JourneyStep = {
   number: string;
   persona: string;
@@ -28,8 +31,6 @@ type JourneyStep = {
   points: string[];
   Icon: typeof Sprout;
   tone: keyof typeof TONE_STYLES;
-  blob?: number;
-  decoration?: "sprout";
   reverse?: boolean;
   image: string;
   imageAlt: string;
@@ -49,9 +50,7 @@ const journeySteps: JourneyStep[] = [
     ],
     Icon: Sprout,
     tone: "moss",
-    blob: 1,
-    decoration: "sprout",
-    // TODO: Replace with a screenshot of the Soil Health dashboard card
+    // TODO: Replace with a real, wide (16:9-ish) photo — a field, soil, or the dashboard in use
     image: "/images/journey/soil-health.jpg",
     imageAlt: "Soil health dashboard showing moisture and nutrient readings",
   },
@@ -68,9 +67,8 @@ const journeySteps: JourneyStep[] = [
     ],
     Icon: ScanLine,
     tone: "rust",
-    blob: 2,
     reverse: true,
-    // TODO: Replace with a screenshot of the disease-scan result screen
+    // TODO: Replace with a real photo of a crop leaf / field inspection
     image: "/images/journey/disease-scan.jpg",
     imageAlt: "AI leaf disease scan result on a crop photo",
   },
@@ -87,8 +85,7 @@ const journeySteps: JourneyStep[] = [
     ],
     Icon: LineChart,
     tone: "teal",
-    blob: 3,
-    // TODO: Replace with a screenshot of the Mandi Rate comparison chart
+    // TODO: Replace with a real photo of a mandi / market
     image: "/images/journey/mandi-rate.jpg",
     imageAlt: "Mandi rate comparison chart across nearby markets",
   },
@@ -105,9 +102,8 @@ const journeySteps: JourneyStep[] = [
     ],
     Icon: Activity,
     tone: "violet",
-    blob: 4,
     reverse: true,
-    // TODO: crop health image.
+    // TODO: Replace with a real photo of a growing crop / field row
     image: "/images/journey/crop-track-record.jpg",
     imageAlt: "Crop health track record timeline with AI suggestions",
   },
@@ -124,8 +120,7 @@ const journeySteps: JourneyStep[] = [
     ],
     Icon: CloudSun,
     tone: "sky",
-    blob: 1,
-    // TODO: weather forecast image.
+    // TODO: Replace with a real sky / field-under-weather photo
     image: "/images/journey/weather-ai.jpg",
     imageAlt: "Weather forecast card with AI action suggestion",
   },
@@ -142,9 +137,8 @@ const journeySteps: JourneyStep[] = [
     ],
     Icon: Truck,
     tone: "amber",
-    blob: 2,
     reverse: true,
-    // TODO: Replace with a screenshot of the Transporter availability list
+    // TODO: Replace with a real photo of a loaded truck / harvest transport
     image: "/images/journey/transporter-availability.jpg",
     imageAlt: "List of available transporters with vehicle type and rate",
   },
@@ -161,8 +155,7 @@ const journeySteps: JourneyStep[] = [
     ],
     Icon: Warehouse,
     tone: "indigo",
-    blob: 3,
-    // TODO: Replace with a screenshot of the Nearby Storehouse finder
+    // TODO: Replace with a real photo of a storehouse / cold storage facility
     image: "/images/journey/nearby-storehouse.jpg",
     imageAlt: "Map and list of nearby cold and normal storehouses",
   },
@@ -189,6 +182,42 @@ const personaGroups = [
     label: "Warehouse owner journey",
     Icon: Warehouse,
     tone: "text-indigo-700 bg-indigo-50 border-indigo-200",
+  },
+] as const;
+
+// Question sections. Everything a person actually wants to know before they trust Sasyam with a season's crop.
+const faqItems = [
+  {
+    q: "What services does Sasyam offer?",
+    a: "Soil health checks, AI leaf-disease diagnosis, live mandi rates, crop health tracking, weather-aware suggestions, transporter booking, and nearby storehouse discovery — all in one dashboard.",
+  },
+  {
+    q: "How accurate is the disease detection?",
+    a: "The model is trained on common crop diseases across major Indian crops and is continually validated against expert diagnoses. It also tells you its confidence, not just a guess.",
+  },
+  {
+    q: "Do I need the internet at all times?",
+    a: "Core recording (soil notes, crop logs) works offline and syncs when you're back online. AI diagnosis and live mandi rates need a connection to fetch fresh data.",
+  },
+  {
+    q: "Which languages does Sasyam support?",
+    a: "English and Hindi today, with more regional languages planned. Every suggestion — not just the interface — is translated, not just labels.",
+  },
+  {
+    q: "How does the Sell, Store, or Process engine decide?",
+    a: "It weighs today's mandi price, nearby storage cost, and spoilage risk for that specific crop, then recommends a split — not a single all-or-nothing answer.",
+  },
+  {
+    q: "Is my farm data private?",
+    a: "Your data is used to power your own recommendations. It isn't sold, and mandi/market data shown to you is aggregated from public sources.",
+  },
+  {
+    q: "What if there's no transporter or storehouse nearby?",
+    a: "Sasyam expands the search radius automatically and flags it clearly, so you know you're seeing a wider search rather than a false 'nothing found.'",
+  },
+  {
+    q: "Is Sasyam free to use?",
+    a: "The core features — soil check, disease scan, mandi rates — are free for farmers. Optional add-ons for bulk transport and storage booking are usage-based.",
   },
 ];
 
@@ -249,7 +278,7 @@ function AnimatedStat({
 
   return (
     <div ref={ref} className="flex flex-col items-center justify-center">
-      <div className="text-4xl font-black text-emerald-950/80">
+      <div className="text-4xl font-black text-slate-800">
         {prefix}
         {count}
         {suffix}
@@ -259,73 +288,18 @@ function AnimatedStat({
   );
 }
 
-//blob shapes for background.
-const BLOB_SHAPES = [
-  "63% 37% 54% 46% / 55% 48% 52% 45%",
-  "41% 59% 60% 40% / 55% 42% 58% 45%",
-  "55% 45% 40% 60% / 60% 40% 65% 35%",
-  "35% 65% 55% 45% / 40% 65% 35% 60%",
-];
-
 const TONE_STYLES = {
-  moss: {
-    badge: "bg-emerald-100 text-emerald-700 ring-emerald-200",
-    blobFrom: "from-emerald-200",
-    blobTo: "to-emerald-500",
-    number: "text-emerald-600",
-    dot: "bg-emerald-600",
-    divider: "bg-emerald-200",
-  },
-  rust: {
-    badge: "bg-amber-100 text-amber-700 ring-amber-200",
-    blobFrom: "from-amber-200",
-    blobTo: "to-orange-500",
-    number: "text-amber-600",
-    dot: "bg-amber-600",
-    divider: "bg-amber-200",
-  },
-  teal: {
-    badge: "bg-teal-100 text-teal-700 ring-teal-200",
-    blobFrom: "from-teal-200",
-    blobTo: "to-teal-500",
-    number: "text-teal-600",
-    dot: "bg-teal-600",
-    divider: "bg-teal-200",
-  },
-  violet: {
-    badge: "bg-violet-100 text-violet-700 ring-violet-200",
-    blobFrom: "from-violet-200",
-    blobTo: "to-violet-500",
-    number: "text-violet-600",
-    dot: "bg-violet-600",
-    divider: "bg-violet-200",
-  },
-  sky: {
-    badge: "bg-sky-100 text-sky-700 ring-sky-200",
-    blobFrom: "from-sky-200",
-    blobTo: "to-sky-500",
-    number: "text-sky-600",
-    dot: "bg-sky-600",
-    divider: "bg-sky-200",
-  },
-  amber: {
-    badge: "bg-orange-100 text-orange-700 ring-orange-200",
-    blobFrom: "from-orange-200",
-    blobTo: "to-amber-600",
-    number: "text-orange-600",
-    dot: "bg-orange-600",
-    divider: "bg-orange-200",
-  },
-  indigo: {
-    badge: "bg-indigo-100 text-indigo-700 ring-indigo-200",
-    blobFrom: "from-indigo-200",
-    blobTo: "to-blue-600",
-    number: "text-indigo-600",
-    dot: "bg-indigo-600",
-    divider: "bg-indigo-200",
-  },
+  moss: { accent: "text-emerald-300", dot: "bg-emerald-300" },
+  rust: { accent: "text-orange-300", dot: "bg-orange-300" },
+  teal: { accent: "text-teal-300", dot: "bg-teal-300" },
+  violet: { accent: "text-violet-300", dot: "bg-violet-300" },
+  sky: { accent: "text-sky-300", dot: "bg-sky-300" },
+  amber: { accent: "text-amber-300", dot: "bg-amber-300" },
+  indigo: { accent: "text-indigo-300", dot: "bg-indigo-300" },
 };
 
+// A single step in the journey: a real photo with the copy
+// floating on top of it in a readable panel, instead of a blob + card combo.
 function WalkthroughStep({
   number,
   eyebrow,
@@ -336,8 +310,6 @@ function WalkthroughStep({
   imageAlt,
   Icon,
   tone,
-  blob = 0,
-  //decoration,
   reverse = false,
 }: {
   number: string;
@@ -349,12 +321,9 @@ function WalkthroughStep({
   imageAlt: string;
   Icon: typeof Sprout;
   tone: keyof typeof TONE_STYLES;
-  blob?: number;
-  decoration?: "sprout";
   reverse?: boolean;
 }) {
   const styles = TONE_STYLES[tone];
-  const radius = BLOB_SHAPES[blob % BLOB_SHAPES.length];
 
   return (
     <article
@@ -362,43 +331,20 @@ function WalkthroughStep({
         reverse ? "lg:[&>div:first-child]:order-2" : ""
       }`}
     >
-      <div className="relative z-10 mx-auto aspect-square w-full max-w-[clamp(12rem,55vw,26rem)]">
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${styles.blobFrom} ${styles.blobTo} shadow-xl shadow-slate-900/10`}
-          style={{ borderRadius: radius }}
-        />
-
-        {/* Image card floats on top of the blob */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-[87%] max-w-sm -rotate-2 overflow-hidden rounded-2xl border-4 border-white shadow-2xl shadow-slate-900/20">
-            {/* TODO: swap this <img> src for real images. */}
-            <img
-              src={image}
-              alt={imageAlt}
-              loading="lazy"
-              className="aspect-[4/3] w-full object-cover transition duration-700 hover:scale-105"
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
-
-            <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-white/20 bg-slate-950/55 px-2.5 py-1.5 text-[11px] font-bold text-white backdrop-blur">
-              Sasyam · Step {number}
-            </div>
-          </div>
+      {/* Image column — just the photo, no blob, rounded corners */}
+      <div className="relative z-10">
+        <div className="overflow-hidden rounded-3xl shadow-2xl shadow-slate-900/20">
+          {/* TODO: swap this <img> src for a real photo/screenshot */}
+          <img
+            src={image}
+            alt={imageAlt}
+            loading="lazy"
+            className="aspect-[4/3] w-full object-cover"
+          />
         </div>
       </div>
 
-      {/* A chhotu sa plant grows out of the soil visual for step 01 */}
-      {/*{decoration === "sprout" && (
-          <div
-            aria-hidden
-            className="absolute -bottom-4 -right-3 flex h-16 w-16 rotate-6 items-center justify-center rounded-full border-4 border-[#f7faf7] bg-emerald-600 text-white shadow-lg"
-          >
-            <Sprout size={28} />
-          </div>
-        )}
-      </div>*/}
-
+      {/* Text column */}
       <div
         className={`relative z-10 max-w-lg ${
           reverse ? "lg:justify-self-start" : "lg:justify-self-end"
@@ -406,22 +352,18 @@ function WalkthroughStep({
       >
         <div className="flex items-center gap-4">
           <span
-            className={`text-sm font-black tracking-widest ${styles.number}`}
+            className={`text-sm font-black tracking-widest ${styles.accent}`}
           >
             {number}
           </span>
-
-          <span className={`h-px w-10 ${styles.divider}`} />
-
+          <span className="h-px w-10 bg-slate-300" />
           <span className="text-xs font-black tracking-[0.16em] text-slate-500">
             {eyebrow}
           </span>
         </div>
 
-        <div
-          className={`mt-5 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${styles.badge}`}
-        >
-          <Icon size={24} />
+        <div className="mt-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 ring-1 ring-slate-200">
+          <Icon size={24} className={styles.accent} />
         </div>
 
         <h3 className="mt-5 text-3xl font-black leading-tight tracking-tight text-[#101a32] sm:text-4xl">
@@ -450,10 +392,46 @@ function WalkthroughStep({
   );
 }
 
+function FaqRow({ q, a }: { q: string; a: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onClick={() => setIsOpen((open) => !open)}
+      className="w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left transition hover:border-slate-300"
+    >
+      <span className="flex items-center justify-between gap-4">
+        <span className="text-sm font-bold text-[#101a32] sm:text-base">
+          {q}
+        </span>
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition-transform duration-300 ${
+            isOpen ? "rotate-45 border-emerald-300 text-emerald-700" : ""
+          }`}
+        >
+          <Plus size={15} />
+        </span>
+      </span>
+
+      <span
+        className={`grid overflow-hidden transition-all duration-300 ${
+          isOpen
+            ? "mt-3 grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <span className="min-h-0 text-sm leading-6 text-slate-600">{a}</span>
+      </span>
+    </button>
+  );
+}
+
 function Landing() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [heroAnikey, setHeroAnikey] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activePersona, setActivePersona] = useState<(typeof personaGroups)[number]["persona"]>("farmer");
   const [clickPulses, setClickPulses] = useState<
     { id: number; x: number; y: number }[]
   >([]);
@@ -464,6 +442,17 @@ function Landing() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handlePersonaSelect = (persona: (typeof personaGroups)[number]["persona"]) => {
+    setActivePersona(persona);
+
+    const target = document.getElementById(
+      personaGroups.find((group) => group.persona === persona)?.id ?? "",
+    );
+
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const handleFeaturesClick = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -478,8 +467,39 @@ function Landing() {
     }, 1400);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#f7f8f5] pt-[80px] text-[#101a32]">
+      <div className="fixed bottom-6 right-6 z-50 hidden flex-col gap-3 md:flex">
+        <button
+          type="button"
+          aria-label="Scroll to top"
+          onClick={scrollToTop}
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg shadow-slate-200/70 backdrop-blur-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+        >
+          <ArrowUp size={18} />
+        </button>
+
+        <button
+          type="button"
+          aria-label="Scroll to bottom"
+          onClick={scrollToBottom}
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-lg shadow-slate-200/70 backdrop-blur-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+        >
+          <ArrowDown size={18} />
+        </button>
+      </div>
+
       {/* Corner-only grid, top-left (tiny), bottom-left (small) */}
       <div
         aria-hidden
@@ -498,13 +518,6 @@ function Landing() {
               "radial-gradient(ellipse 100% 100% at 100% 0%, black 55%, transparent 100%)",
           }}
         />
-        {/*<div
-          className="absolute -top-10 right-[-2rem] h-56 w-56 rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, rgba(155, 108, 20, 0.54), transparent)",
-          }}
-        />*/}
 
         {/* TOP-LEFT corner grid */}
         <div
@@ -527,11 +540,6 @@ function Landing() {
           }}
         />
       </div>
-      {/*<div className="border-b border-emerald-950 bg-[#003d32] px-3 py-1.5 text-center text-[11px] font-medium tracking-wide text-emerald-100 sm:text-xs">
-        <span className="mr-2 text-amber-300">✦</span>
-        Smart India Hackathon 2026 Official Prototype - Agriculture & Food Tech
-        Innovation
-      </div>*/}
 
       <header className="fixed left-0 right-0 top-0 z-50 px-[clamp(0.75rem,2vw,2rem)] py-3 transition-all duration-500">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-[clamp(0.5rem,1vw,0.75rem)] transition-all duration-500">
@@ -582,7 +590,7 @@ function Landing() {
                 <button className="rounded-lg bg-slate-900 px-[clamp(0.5rem,0.65rem,0.8rem)] py-[clamp(0.3rem,0.37rem,0.45rem)] font-semibold text-white transition hover:bg-slate-700">
                   EN
                 </button>
-                <button className="px-[clamp(0.35rem,0.49rem,0.6rem)] py-[clamp(0.2rem,0.3rem,0.4rem)] text-slate-700 text-[clamp(0.7rem,1vw,0.875rem)] transition hover:text-slate-900">
+                <button className="px-[clamp(0.35rem,0.49rem,0.6rem)] py-[clamp(0.2rem,0.3rem,0.4rem)] text-[clamp(0.7rem,1vw,0.875rem)] text-slate-700 transition hover:text-slate-900">
                   हिंदी
                 </button>
               </div>
@@ -631,7 +639,6 @@ function Landing() {
                   className="absolute right-0 top-12 w-60 rounded-2xl border border-white/60 bg-white/60 p-3 shadow-[0_18px_42px_rgba(15,23,42,0.14)] backdrop-blur-xl"
                 >
                   <div className="mb-2 flex items-center gap-2 border-b border-slate-200/80 px-3 pb-3 text-sm font-semibold text-slate-800">
-                    {/*<Globe2 size={16} className="text-emerald-700" />*/}
                     <button className="rounded-md bg-slate-900 px-2 py-1 font-semibold text-white">
                       EN
                     </button>
@@ -660,14 +667,7 @@ function Landing() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="mt-1 block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100/80 hover:text-slate-900"
                   >
-                    Explore Features
-                  </a>
-                  <a
-                    href="#innovation"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="mt-1 block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100/80 hover:text-slate-900"
-                  >
-                    Core Innovation
+                    Powerful Features
                   </a>
                 </div>
               )}
@@ -675,6 +675,8 @@ function Landing() {
           </div>
         </div>
       </header>
+
+      {/* ============================= HERO — unchanged ============================= */}
       <section className="relative overflow-hidden">
         <div
           aria-hidden
@@ -738,19 +740,19 @@ function Landing() {
             <img
               src="/images/hero/photo-1.png"
               alt="Sasyam preview 1"
-              className="absolute z-10 aspect-[16/10] rounded-2xl object-cover shadow-2xl w-[clamp(14rem,38vw,28rem)]"
+              className="absolute z-10 aspect-[16/10] w-[clamp(14rem,38vw,28rem)] rounded-2xl object-cover shadow-2xl"
               style={{ animation: "stackInLeft 0.6s ease-out 0.1s both" }}
             />
             <img
               src="/images/hero/photo-2.png"
               alt="Sasyam preview 2"
-              className="absolute z-20 aspect-[16/10] rounded-2xl object-cover shadow-2xl w-[clamp(14rem,38vw,28rem)]"
+              className="absolute z-20 aspect-[16/10] w-[clamp(14rem,38vw,28rem)] rounded-2xl object-cover shadow-2xl"
               style={{ animation: "stackInCenter 0.6s ease-out 0.27s both" }}
             />
             <img
               src="/images/hero/photo-3.png"
               alt="Sasyam preview 3"
-              className="absolute z-30 aspect-[16/10] rounded-2xl object-cover shadow-2xl w-[clamp(14rem,38vw,28rem)]"
+              className="absolute z-30 aspect-[16/10] w-[clamp(14rem,38vw,28rem)] rounded-2xl object-cover shadow-2xl"
               style={{ animation: "stackInRight 0.6s ease-out 0.54s both" }}
             />
 
@@ -772,60 +774,10 @@ function Landing() {
         </div>
       </section>
 
-      <section
-        id="innovation"
-        className="bg-slate-950 px-5 py-12 text-white md:px-8"
-      >
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-5 md:flex-row md:items-center">
-          <div>
-            <h2 className="text-2xl font-extrabold text-emerald-400 sm:text-3xl">
-              The Core Innovation: Sell, Store, or Process Engine
-            </h2>
-            <p className="mt-2 text-slate-300">
-              Algorithmic decision science eliminating post-harvest loss &
-              maximizing farmer revenue
-            </p>
-          </div>
-          <Link
-            to="/login"
-            className="flex w-fit items-center gap-2 rounded-xl bg-amber-500 px-6 py-3 font-bold text-slate-950 hover:bg-amber-400"
-            style={{
-              padding:
-                "clamp(0.65rem, 1.8vw, 1rem) clamp(1.1rem, 4vw, 1.75rem)",
-              fontSize: "clamp(0.85rem, 1.6vw, 1rem)",
-            }}
-          >
-            Try Decision Engine Demo <ArrowRight size={17} />
-          </Link>
-        </div>
-      </section>
-
-      {/* previous version of the stats section with random emerald bg now commented out */}
-      {/*<section className="bg-[#f7f8f5] px-5 py-6 md:px-8">
-        <div className="mx-auto grid max-w-5xl grid-cols-3 divide-x divide-[#bfd5cd] bg-[#eef7f2]/80 py-2 backdrop-blur-sm">
-          <div className="px-6 py-5 text-center">
-            <AnimatedStat value={35} suffix="%" label="Spoilage Avoided" />
-          </div>
-          <div className="px-6 py-5 text-center">
-            <AnimatedStat value={94} suffix="%" label="AI Disease Accuracy" />
-          </div>
-          <div className="px-6 py-5 text-center">
-            <AnimatedStat
-              value={12.5}
-              prefix="₹"
-              suffix="K"
-              label="Avg Profit Lift/Ton"
-            />
-          </div>
-        </div>
-      </section>*/}
-
-      {/* New version of the stats section with a more subtle background and a grid overlay */}
+      {/* ============================= STATS — moved right under the hero ============================= */}
       <section className="relative px-5 py-10 md:px-8">
-        {/* Pretty horizontal divider — top edge of this section */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
 
-        {/* Cool-toned corner grids, kept subtle */}
         <div
           aria-hidden
           className="pointer-events-none absolute -left-6 -top-6 h-32 w-32"
@@ -853,11 +805,8 @@ function Landing() {
           }}
         />
 
-        {/* Stats row — no dividing borders, uses gradient lines instead */}
         <div className="relative z-10 mx-auto grid max-w-5xl grid-cols-3 bg-[#f7faf7]/80 py-2">
-          {/* Small vertical gradient divider between stat 1 and 2 */}
           <div className="pointer-events-none absolute inset-y-0 left-1/3 my-auto h-[60%] w-px bg-gradient-to-b from-transparent via-[#5e3d30] to-transparent" />
-          {/* Small vertical gradient divider between stat 2 and 3 */}
           <div className="pointer-events-none absolute inset-y-0 left-2/3 my-auto h-[60%] w-px bg-gradient-to-b from-transparent via-[#5e3d30] to-transparent" />
 
           <div className="px-6 py-5 text-center">
@@ -876,67 +825,14 @@ function Landing() {
           </div>
         </div>
 
-        {/* Three questions section */}
-        <div className="relative z-10 mx-auto mt-14 max-w-5xl">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <h3 className="text-2xl font-black tracking-tight text-[#101a32] sm:text-3xl">
-              Built around three questions
-            </h3>
-            <p className="max-w-xs text-sm text-slate-500 sm:text-right">
-              The ones you actually ask yourself, every morning.
-            </p>
-          </div>
-
-          <div className="mt-8 py-8 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
-              <span className="text-xs font-black tracking-widest text-emerald-600">
-                01
-              </span>
-              <h4 className="mt-3 text-lg font-black text-[#101a32]">
-                Is it healthy?
-              </h4>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                A photo of a leaf is enough. Sasyam names the problem and the
-                exact dose to fix it, sized to your plot.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
-              <span className="text-xs font-black tracking-widest text-emerald-600">
-                02
-              </span>
-              <h4 className="mt-3 text-lg font-black text-[#101a32]">
-                Is it ready?
-              </h4>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Growth stage, weather, and soil moisture, read together. Harvest
-                timing stops being a guess.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
-              <span className="text-xs font-black tracking-widest text-emerald-600">
-                03
-              </span>
-              <h4 className="mt-3 text-lg font-black text-[#101a32]">
-                What now?
-              </h4>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Mandi price, storage cost, and spoilage risk, weighed for you.
-                One answer: sell, store, or process.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Pretty horizontal divider — bottom edge of this section */}
-        {/*<div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />*/}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
       </section>
 
-      {/* SECTION A — dark headline, becomes the entry point for #features */}
+      {/* ============================= POWERFUL FEATURES — was "Core Innovation", now a bigger dark bento grid ============================= */}
       <section
         id="features"
-        className="relative overflow-hidden bg-slate-950 px-5 py-20 text-white md:px-8 md:py-28"
+        className="relative overflow-hidden bg-slate-950 px-5 py-24 text-white md:px-8 md:py-32"
       >
-        {/* Edge-peeking grid — 4 corners + 2 random side spots, brighter lines for dark bg */}
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div
             className="absolute -left-4 -top-4 h-56 w-56"
@@ -986,7 +882,6 @@ function Landing() {
                 "radial-gradient(ellipse 100% 100% at 100% 100%, black 30%, transparent 100%)",
             }}
           />
-          {/* random side-margin peeks, not just corners */}
           <div
             className="absolute left-0 top-1/3 h-40 w-24"
             style={{
@@ -1014,130 +909,309 @@ function Landing() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-6xl">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-emerald-300">
-              <Sparkles size={14} />
-              One platform. Three journeys.
-            </span>
-
-            <h2 className="mt-5 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
-              From planting to profit,
-              <span className="block text-emerald-400">
-                Sasyam AI stays with you.
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-emerald-300">
+                One platform. Three journeys.
               </span>
-            </h2>
 
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-              Sasyam connects farmers, transporters, markets and storage into one
-              intelligent decision platform.
-            </p>
+              <h2 className="mt-5 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
+                Powerful features to transform your farming operations
+              </h2>
+
+              <p className="mt-4 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
+                Sasyam connects farmers, transporters, markets and storage into
+                one intelligent decision platform.
+              </p>
+            </div>
+
+            <Link
+              to="/login"
+              className="flex w-fit shrink-0 items-center gap-2 rounded-xl bg-amber-500 font-bold text-slate-950 transition hover:bg-amber-400"
+              style={{
+                padding:
+                  "clamp(0.65rem, 1.8vw, 1rem) clamp(1.1rem, 4vw, 1.75rem)",
+                fontSize: "clamp(0.85rem, 1.6vw, 1rem)",
+              }}
+            >
+              Try Decision Engine Demo <ArrowRight size={17} />
+            </Link>
           </div>
 
-          <div className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-2">
-            <a
-              href="#journey-farmer"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-200 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
-            >
-              <Sprout size={16} />
-              For Farmers
-            </a>
+          {/* Bento grid — big cards for the flagship pieces, small cards for the rest */}
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-emerald-900/60 to-slate-900 p-7 lg:col-span-2">
+              <ScanLine size={26} className="text-emerald-300" />
+              <h3 className="mt-4 text-xl font-black text-white sm:text-2xl">
+                AI crop diagnosis, from a single photo
+              </h3>
+              <p className="mt-2 max-w-md text-sm leading-6 text-slate-300 sm:text-base">
+                Snap a leaf, get the problem named and the exact dose to fix it
+                — sized to the plot, not a generic label on a pesticide bag.
+              </p>
+            </div>
 
-            <a
-              href="#journey-transporter"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-200 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
-            >
-              <LineChart size={16} />
-              For Transport & Trade
-            </a>
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7">
+              <LineChart size={24} className="text-teal-300" />
+              <h3 className="mt-4 text-lg font-black text-white">
+                Live mandi pricing
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                Compare rates across nearby markets before you decide to sell.
+              </p>
+            </div>
 
-            <a
-              href="#journey-warehouse"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-200 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-emerald-400/10 hover:text-emerald-300"
-            >
-              <Warehouse size={16} />
-              For Warehouses
-            </a>
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7">
+              <MessageCircle size={24} className="text-sky-300" />
+              <h3 className="mt-4 text-lg font-black text-white">
+                24/7 AI advisory
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                Ask in Hindi or English, any time — no waiting on an expert
+                visit.
+              </p>
+            </div>
+
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-800 to-slate-900 p-7 lg:col-span-2">
+              <Sparkles size={26} className="text-amber-300" />
+              <h3 className="mt-4 text-xl font-black text-white sm:text-2xl">
+                One decision engine: sell, store, or process
+              </h3>
+              <p className="mt-2 max-w-md text-sm leading-6 text-slate-300 sm:text-base">
+                Mandi price, storage cost, and spoilage risk, weighed together —
+                a split recommendation, not a guess.
+              </p>
+            </div>
+
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7">
+              <Truck size={24} className="text-orange-300" />
+              <h3 className="mt-4 text-lg font-black text-white">
+                Transport & storage network
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                Nearby rides and cold storage, ready when the harvest is.
+              </p>
+            </div>
+
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7">
+              <CloudSun size={24} className="text-indigo-300" />
+              <h3 className="mt-4 text-lg font-black text-white">
+                Weather-aware planning
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-300">
+                Hyperlocal forecasts baked into every suggestion Sasyam makes.
+              </p>
+            </div>
+
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-7 sm:col-span-2 lg:col-span-3">
+              <ShieldCheck size={24} className="text-emerald-300" />
+              <h3 className="mt-4 text-lg font-black text-white">
+                Built for how Indian farms actually work
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                Offline-friendly logging, regional language support, and
+                recommendations sized to a plot — not a generic national
+                average.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-{/* SECTION B — light, journey/blob cards */}
-<section
-  onClick={handleFeaturesClick}
-  className="relative overflow-hidden bg-[#f7faf7] px-5 pb-20 pt-10 md:px-8 md:pb-28 md:pt-14"
->
-  {/* Edge-peeking grid — 4 corners + random side spots, cool slate tone */}
-  <div
-    aria-hidden
-    className="absolute -top-4 -left-4 h-64 w-64 md:h-80 md:w-80"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 100% 100% at 0% 0%, black 30%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 0% 0%, black 30%, transparent 100%)" }}
-  />
-  <div
-    aria-hidden
-    className="absolute -top-4 -right-4 h-64 w-64 md:h-80 md:w-80"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 100% 100% at 100% 0%, black 30%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 100% 0%, black 30%, transparent 100%)" }}
-  />
-  <div
-    aria-hidden
-    className="absolute -bottom-4 -left-4 h-64 w-64 md:h-80 md:w-80"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 100% 100% at 0% 100%, black 30%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 0% 100%, black 30%, transparent 100%)" }}
-  />
-  <div
-    aria-hidden
-    className="absolute -bottom-4 -right-4 h-64 w-64 md:h-80 md:w-80"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse 100% 100% at 100% 100%, black 30%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 100% 100%, black 30%, transparent 100%)" }}
-  />
-  <div
-    aria-hidden
-    className="absolute left-0 top-[35%] h-50 w-45"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.22) 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "radial-gradient(ellipse 100% 100% at 0% 50%, black 35%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 0% 50%, black 35%, transparent 100%)" }}
-  />
-  <div
-    aria-hidden
-    className="absolute left-0 top-[57%] h-40 w-24"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.22) 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "radial-gradient(ellipse 100% 100% at 0% 50%, black 35%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 0% 50%, black 35%, transparent 100%)" }}
-  />
-  <div
-    aria-hidden
-    className="absolute right-0 top-[65%] h-36 w-20"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.22) 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "radial-gradient(ellipse 100% 100% at 100% 50%, black 35%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 100% 50%, black 35%, transparent 100%)" }}
-  />
-  <div
-    aria-hidden
-    className="absolute right-0 top-[30%] h-50 w-35"
-    style={{ backgroundImage: "linear-gradient(to right, rgba(75,85,105,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.22) 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "radial-gradient(ellipse 100% 100% at 100% 50%, black 35%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 100% 100% at 100% 50%, black 35%, transparent 100%)" }}
-  />
+      {/* ============================= Extended question sections. ============================= */}
+      <section className="relative overflow-hidden bg-[#f7faf7] px-5 py-20 md:px-8 md:py-28">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -left-6 -top-6 h-32 w-32"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.2) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 0%, black 60%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 0%, black 60%, transparent 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-6 -right-6 h-32 w-32"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.2) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 100%, black 60%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 100%, black 60%, transparent 100%)",
+          }}
+        />
+
+        <div className="relative z-10 mx-auto max-w-5xl">
+          <div className="mx-auto max-w-xl text-center">
+            <h2 className="text-3xl font-black tracking-tight text-[#101a32] sm:text-4xl">
+              Everything you need to know
+            </h2>
+            <p className="mt-3 text-slate-500">
+              The questions farmers actually ask before their first season on
+              Sasyam.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-3 sm:grid-cols-2">
+            {faqItems.map((item) => (
+              <FaqRow key={item.q} q={item.q} a={item.a} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="relative h-6 bg-[#f7faf7]">
+        <div className="absolute inset-x-0 -top-2 h-px bg-gradient-to-r from-transparent via-slate-400/50 to-transparent" />
+      </div>
+
+      {/* =============================   walkthrough — full photo cards, no blobs ============================= */}
+      <section
+        onClick={handleFeaturesClick}
+        className="relative overflow-hidden bg-[#f7faf7] px-5 pb-20 pt-10 md:px-8 md:pb-28 md:pt-14"
+      >
+        <div
+          aria-hidden
+          className="absolute -top-4 -left-4 h-64 w-64 md:h-80 md:w-80"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 0%, black 30%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 0%, black 30%, transparent 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute -top-4 -right-4 h-64 w-64 md:h-80 md:w-80"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 0%, black 30%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 0%, black 30%, transparent 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute -bottom-4 -left-4 h-64 w-64 md:h-80 md:w-80"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 100%, black 30%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 100%, black 30%, transparent 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute -bottom-4 -right-4 h-64 w-64 md:h-80 md:w-80"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.25) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.25) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 100%, black 30%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 100%, black 30%, transparent 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute left-0 top-[35%] h-50 w-45"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.22) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 50%, black 35%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 0% 50%, black 35%, transparent 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute right-0 top-[30%] h-50 w-35"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(75,85,105,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(75,85,105,0.22) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 50%, black 35%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at 100% 50%, black 35%, transparent 100%)",
+          }}
+        />
+
+        {clickPulses.map((pulse) => (
+          <div
+            key={pulse.id}
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, rgba(12, 93, 139, 0.8) 1px, transparent 1px), linear-gradient(to bottom, rgba(43, 17, 104, 0.7) 1px, transparent 1px)",
+              backgroundSize: "56px 56px",
+              maskImage: `radial-gradient(circle 240px at ${pulse.x}px ${pulse.y}px, black 0%, black 45%, transparent 78%)`,
+              WebkitMaskImage: `radial-gradient(circle 240px at ${pulse.x}px ${pulse.y}px, black 0%, black 45%, transparent 78%)`,
+              animation: "gridShine 1.3s ease-out forwards",
+            }}
+          />
+        ))}
+
+        <style>{`
+          @keyframes gridShine {
+            from { opacity: 0; }
+            15%  { opacity: 1; }
+            to   { opacity: 0; }
+          }
+        `}</style>
 
 
-  {clickPulses.map((pulse) => (
-    <div
-      key={pulse.id}
-      aria-hidden
-      className="pointer-events-none absolute inset-0 z-0"
-      style={{
-        backgroundImage:
-          "linear-gradient(to right, rgba(12, 93, 139, 0.8) 1px, transparent 1px), linear-gradient(to bottom, rgba(43, 17, 104, 0.7) 1px, transparent 1px)",
-        backgroundSize: "56px 56px",
-        maskImage: `radial-gradient(circle 240px at ${pulse.x}px ${pulse.y}px, black 0%, black 45%, transparent 78%)`,
-        WebkitMaskImage: `radial-gradient(circle 240px at ${pulse.x}px ${pulse.y}px, black 0%, black 45%, transparent 78%)`,
-        animation: "gridShine 1.3s ease-out forwards",
-      }}
-    />
-  ))}
+        <div className="relative z-10 mx-auto max-w-6xl">
+          <div className="mx-auto mt-2 max-w-3xl text-center sm:mt-4">
+            <h2 className="text-4xl font-bold tracking-tight text-[#101a32] sm:text-4xl">
+              From planting to profit,
+              <span className="block font-bold text-emerald-700 text-4xl sm:text-5xl lg:text-6xl bg-gradient-to-r from-slate-800 via-emerald-700 to-teal-500 bg-clip-text text-transparent">
+                Sasyam stays with you.
+              </span>
+            </h2>
+          </div>
 
-  <style>{`
-    @keyframes gridShine {
-      from { opacity: 0; }
-      15%  { opacity: 1; }
-      to   { opacity: 0; }
-    }
-  `}</style>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {personaGroups.map(({ persona, label, Icon }) => {
+              const isActive = activePersona === persona;
 
-  <div className="relative z-10 mx-auto max-w-6xl">
+              return (
+                <button
+                  key={persona}
+                  type="button"
+                  onClick={() => handlePersonaSelect(persona)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition-all duration-200 ${
+                    isActive
+                      ? "border-emerald-600 bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:text-emerald-700"
+                  }`}
+                >
+                  <Icon size={16} />
+                  {label.replace(" journey", "")}
+                </button>
+              );
+            })}
+          </div>
 
-          <div className="relative mt-16">
-            {/*<div className="pointer-events-none absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-emerald-200 to-transparent lg:block" />*/}
-
+          <div className="relative mt-8">
             {personaGroups.map((group) => {
               const stepsForPersona = journeySteps.filter(
                 (step) => step.persona === group.persona,
@@ -1148,7 +1222,7 @@ function Landing() {
               return (
                 <div key={group.id} id={group.id} className="scroll-mt-28">
                   <div
-                    className={`relative z-10 mb-2 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-[0.14em] ${group.tone}`}
+                    className={`relative z-10 mb-2 mt-10 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-[0.14em] ${group.tone}`}
                   >
                     <group.Icon size={14} />
                     {group.label}
@@ -1166,8 +1240,6 @@ function Landing() {
                       imageAlt={step.imageAlt}
                       Icon={step.Icon}
                       tone={step.tone}
-                      blob={step.blob}
-                      decoration={step.decoration}
                       reverse={step.reverse}
                     />
                   ))}
@@ -1176,8 +1248,8 @@ function Landing() {
             })}
           </div>
 
-          <div className="mt-8 rounded-[2rem] border border-emerald-200 bg-[#003d32] p-7 text-white shadow-xl shadow-emerald-950/10 sm:p-9">
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-slate-950 to-emerald-800 bg-blend-multiply p-7 text-white shadow-xl shadow-emerald-950/10 sm:p-9">
+            <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="max-w-3xl">
                 <span className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">
                   The complete journey
@@ -1188,7 +1260,7 @@ function Landing() {
                 </h3>
 
                 <p className="mt-3 leading-7 text-emerald-50/75">
-                  Sasyam AI connects the stages instead of treating them as
+                  Sasyam connects the stages instead of treating them as
                   isolated tools. One continuous decision layer around the
                   produce.
                 </p>
@@ -1206,11 +1278,11 @@ function Landing() {
         </div>
       </section>
 
-      <footer className="bg-slate-950 px-5 py-8 text-sm text-slate-300 md:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 md:flex-row">
+      <footer className="bg-slate-950 px-4 py-8 text-sm text-slate-300 md:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col justify-between gap-3 md:flex-row">
           <p>
-            <span className="font-bold text-emerald-400">✦ Sasyam</span> -
-            Smart India Hackathon 2026 Prototype
+            <span className="font-bold text-emerald-400">✦ Sasyam</span> - Smart
+            India Hackathon 2026 Prototype
           </p>
           <p>
             Built with React, Tailwind CSS v4 & AI Algorithms for Indian Farmers
