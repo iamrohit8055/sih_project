@@ -21,6 +21,7 @@ function TopNavbar() {
       {/* ================= LEFT SIDE ================= */}
 
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+        
         {/* Search */}
 
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border bg-slate-50 px-3 py-2 sm:max-w-md sm:gap-3 sm:px-4">

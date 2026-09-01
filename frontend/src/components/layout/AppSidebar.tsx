@@ -2,7 +2,6 @@ import {
   BarChart3,
   Bot,
   Boxes,
-  ChartNoAxesCombined,
   CloudSun,
   Leaf,
   LayoutDashboard,
@@ -77,7 +76,7 @@ function AppSidebar({
   return (
     <aside
       className={`
-    fixed left-0 top-0 z-40 z-40 flex h-screen shrink-0
+    fixed left-0 top-0 z-40 flex h-screen shrink-0
     border-r border-slate-800
     bg-slate-950 text-white
     transition-[width] duration-300 ease-in-out
@@ -166,7 +165,6 @@ function AppSidebar({
           </div>
         </div>
 
-        {/* ================= COLLAPSED ================= */}
 
         {/* ================= COLLAPSED ================= */}
 
