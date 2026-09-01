@@ -32,3 +32,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Sample files
+Landing.tsx
